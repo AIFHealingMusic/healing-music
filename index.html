@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIF Healing Music | 공간과 마음을 채우다</title>
+    <meta name="description" content="당신의 공간에 감성을 채우고, 마음에 위로를 전하는 힐링 음악 서비스">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700&family=Gowun+Dodum&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #8e44ad;
+            --accent-color: #fd79a8;
+            --bg-gradient: linear-gradient(135deg, #1e1b4b, #312e81, #4c1d95);
+            --card-bg: rgba(255, 255, 255, 0.07);
+            --text-color: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-color);
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 배경 애니메이션 (별똥별) */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            opacity: 0;
+            animation: twinkle 3s infinite;
+        }
+
+        @keyframes twinkle {
+
+            0%,
+            100% {
+                opacity: 0.2;
+            }
+
+            50% {
+                opacity: 0.8;
+            }
+        }
+
+        /* 헤더 */
+        header {
+            text-align: center;
+            padding: 80px 20px 40px;
+            animation: slideDown 1s ease-out;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(142, 68, 173, 0.5);
+        }
+
+        h1 span {
+            color: #a29bfe;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #d1d1d1;
+            font-weight: 300;
+        }
+
+        /* 메인 컨테이너 */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px 80px;
+            flex: 1;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            perspective: 1000px;
+        }
+
+        /* 카드 디자인 */
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            opacity: 0;
+            transform: translateY(30px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-10px) scale(1.03);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* 아이콘 영역 */
+        .icon-box {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.1);
+        }
+
+        .card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .card p {
+            font-size: 0.9rem;
+            color: #aaa;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .btn-card {
+            padding: 10px 25px;
+            border-radius: 30px;
+            border: none;
+            background: linear-gradient(90deg, #6c5ce7, #a29bfe);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
+        }
+
+        .card:hover .btn-card {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(108, 92, 231, 0.5);
+        }
+
+        /* 모달 (AI 메시지 팝업) */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: 0.3s;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: rgba(30, 30, 50, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 40px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            transform: scale(0.8);
+            transition: 0.3s;
+            box-shadow: 0 0 40px rgba(142, 68, 173, 0.3);
+        }
+
+        .modal-overlay.active .modal {
+            transform: scale(1);
+        }
+
+        .ai-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            color: #fd79a8;
+            margin-bottom: 20px;
+            border: 1px solid #fd79a8;
+        }
+
+        .ai-message {
+            font-family: 'Gowun Dodum', sans-serif;
+            font-size: 1.3rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            color: #fff;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-btn-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .btn-play {
+            padding: 12px 30px;
+            background: #6c5ce7;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-play:hover {
+            background: #5641e5;
+        }
+
+        .btn-close {
+            padding: 12px 30px;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #aaa;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-close:hover {
+            border-color: white;
+            color: white;
+        }
+
+        /* 푸터 */
+        footer {
+            text-align: center;
+            padding: 30px;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.3);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* 반응형 디자인 */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .subtitle {
+                font-size: 0.95rem;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .modal {
+                padding: 30px 20px;
+            }
+
+            .ai-message {
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="bg-animation" id="star-bg"></div>
+
+    <header>
+        <h1>AIF <span>Healing Music</span></h1>
+        <p class="subtitle">당신의 공간에 감성을 채우고, 마음에 위로를 전합니다.</p>
+    </header>
+
+    <div class="container">
+        <div class="grid">
+            <!-- 1. 카페/로비 -->
+            <div class="card" onclick="openModal('cafe')">
+                <div class="icon-box">☕</div>
+                <h3>카페 / 로비</h3>
+                <p>따뜻한 커피향과 어울리는<br>재즈와 어쿠스틱 무드</p>
+                <button class="btn-card">감성 채우기</button>
+            </div>
+
+            <!-- 2. 매장/갤러리 -->
+            <div class="card" onclick="openModal('gallery')">
+                <div class="icon-box">🖼️</div>
+                <h3>매장 / 갤러리</h3>
+                <p>공간의 품격을 높여주는<br>세련되고 모던한 팝</p>
+                <button class="btn-card">분위기 띄우기</button>
+            </div>
+
+            <!-- 3. 공부/작업 -->
+            <div class="card" onclick="openModal('study')">
+                <div class="icon-box">📚</div>
+                <h3>공부 / 작업</h3>
+                <p>몰입을 돕는 로파이(Lofi)와<br>잔잔한 백색소음</p>
+                <button class="btn-card">집중하기</button>
+            </div>
+
+            <!-- 4. 필라테스/명상 -->
+            <div class="card" onclick="openModal('yoga')">
+                <div class="icon-box">🍃</div>
+                <h3>필라테스 / 명상</h3>
+                <p>내면의 소리에 집중하는<br>자연의 소리와 힐링음악</p>
+                <button class="btn-card">마음 비우기</button>
+            </div>
+
+            <!-- 5. 수면/휴식 -->
+            <div class="card" onclick="openModal('sleep')">
+                <div class="icon-box">🌙</div>
+                <h3>수면 / 휴식</h3>
+                <p>지친 하루 끝,<br>깊은 잠을 위한 수면 뇌파</p>
+                <button class="btn-card">편안해지기</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        &copy; 2024 AIF Healing Music. All rights reserved.
+    </footer>
+
+    <!-- AI 메시지 모달 -->
+    <div class="modal-overlay" id="modal">
+        <div class="modal">
+            <div class="ai-badge">✨ AI 작가의 위로</div>
+            <div class="ai-message" id="ai-text"></div>
+            <div class="modal-btn-group">
+                <button class="btn-close" onclick="closeModal()">닫기</button>
+                <button class="btn-play" id="play-link">음악 듣기</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 별 애니메이션 생성
+        const starContainer = document.getElementById('star-bg');
+        for (let i = 0; i < 50; i++) {
+            let star = document.createElement('div');
+            star.className = 'star';
+            let size = Math.random() * 3;
+            star.style.left = `${Math.random() * 100}%`;
+            star.style.top = `${Math.random() * 100}%`;
+            star.style.width = `${size}px`;
+            star.style.height = `${size}px`;
+            star.style.animationDuration = `${Math.random() * 3 + 2}s`;
+            star.style.animationDelay = `${Math.random() * 5}s`;
+            starContainer.appendChild(star);
+        }
+
+        // 카드 애니메이션
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry, index) => {
+                if (entry.isIntersecting) {
+                    setTimeout(() => {
+                        entry.target.style.opacity = 1;
+                        entry.target.style.transform = 'translateY(0)';
+                    }, index * 150);
+                    observer.unobserve(entry.target);
+                }
+            });
+        });
+        document.querySelectorAll('.card').forEach(card => observer.observe(card));
+
+        // AI 메시지 데이터
+        const aiMessages = {
+            'cafe': [
+                "따뜻한 커피 한 잔처럼, 당신의 하루도 온기로 채워지길 바라요.",
+                "잠시 쉬어가도 괜찮아요. 여유 속에서 작은 행복을 발견해 보세요.",
+                "창밖의 풍경을 보며 멍하니 있는 시간, 그게 바로 힐링이에요.",
+                "오늘 하루도 당신만의 리듬으로 멋지게 흘러가고 있어요."
+            ],
+            'gallery': [
+                "당신의 일상이 마치 한 폭의 그림처럼 아름답게 빛나고 있습니다.",
+                "세련된 음악과 함께 흐르는 지금 이 순간, 당신이 주인공입니다.",
+                "복잡한 생각은 내려놓고, 흐르는 분위기에 몸을 맡겨보세요.",
+                "오늘 당신의 선택과 취향이 멋진 영감이 되어 돌아올 거예요."
+            ],
+            'study': [
+                "당신의 노력이 쌓여 눈부신 미래가 될 거예요. 조금만 더 힘내요!",
+                "집중하는 당신의 모습이 그 누구보다 아름답습니다.",
+                "천천히 가도 괜찮아요. 방향만 맞다면 결국 도착할 테니까요.",
+                "지금 흘리는 땀방울이 내일의 당신을 웃게 할 거예요. 화이팅!"
+            ],
+            'yoga': [
+                "숨을 깊게 들이마시고 내쉬세요. 당신은 지금 안전하고 평온합니다.",
+                "복잡한 세상의 소리는 끄고, 내면의 목소리에 귀 기울여 보세요.",
+                "흔들리는 것은 약한 게 아니에요. 중심을 잡아가는 과정일 뿐이죠.",
+                "나를 사랑하는 시간, 지금 이 순간 온전히 나에게 집중하세요."
+            ],
+            'sleep': [
+                "오늘 하루 정말 고생 많았어요. 이제 모든 걱정은 내려놓고 푹 쉬세요.",
+                "밤하늘의 별들이 당신의 꿈을 지켜줄 거예요. 좋은 꿈 꾸세요.",
+                "내일은 내일의 태양이 뜰 거예요. 오늘은 그저 편안함만 느끼세요.",
+                "당신의 깊은 잠이 내일의 긍정적인 에너지가 될 거예요. 잘 자요."
+            ]
+        };
+
+        // YouTube 링크
+        const youtubeLinks = {
+            'cafe': 'https://youtube.com/playlist?list=PLXSRLirCDaEJxsvLBKiN2QGjHCt3HdGoh&si=vW_E227ylkan5gFN',
+            'gallery': 'https://youtube.com/playlist?list=PLXSRLirCDaEIIUejXUdiGfjr47athSojl&si=xs3y0FvgjwSLDRl6',
+            'study': 'https://youtube.com/playlist?list=PLXSRLirCDaEL_prJEq8zAYjrzk9-fH5zZ&si=m7pVptIaq_WMS8B2',
+            'yoga': 'https://youtube.com/playlist?list=PLXSRLirCDaEJx5hCT9MgoUc8DaDdRAiST&si=bMU5Vsb66Ie03kqO',
+            'sleep': 'https://youtube.com/playlist?list=PLXSRLirCDaEKJD1hKmGbMiRzNtEMVUIko&si=-FgrgIv14WYKz6Vw'
+        };
+
+        const modal = document.getElementById('modal');
+        const aiText = document.getElementById('ai-text');
+        const playBtn = document.getElementById('play-link');
+
+        // 모달 열기 함수
+        function openModal(category) {
+            const messages = aiMessages[category];
+            const randomMsg = messages[Math.floor(Math.random() * messages.length)];
+            aiText.innerText = "";
+            modal.classList.add('active');
+
+            // 타이핑 효과
+            let i = 0;
+            function typeWriter() {
+                if (i < randomMsg.length) {
+                    aiText.innerHTML += randomMsg.charAt(i);
+                    i++;
+                    setTimeout(typeWriter, 40);
+                }
+            }
+            setTimeout(typeWriter, 300);
+
+            // 음악 듣기 버튼 설정
+            playBtn.onclick = function () {
+                window.open(youtubeLinks[category], '_blank');
+                closeModal();
+            };
+        }
+
+        // 모달 닫기 함수
+        function closeModal() {
+            modal.classList.remove('active');
+        }
+
+        // 모달 배경 클릭 시 닫기
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+    </script>
+</body>
+
+</html>
