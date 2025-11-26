@@ -3,43 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>24시간 AIF 힐링 라디오</title>
+    <title>24시간 힐링 라디오</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="radio-container">
-        <h1>24시간 힐링 라디오</h1>
-        <p>광고 없는 무료 방송 · 당신의 공간에 감성을 채웁니다.</p>
-        
-        <div id="listener-display">현재 청취자: 1명 (준비 중)</div>
-        
-        <audio id="healing-stream" controls autoplay>
-            <source src="http://example.com:8000/stream" type="audio/mpeg">
-            Your browser does not support the audio element.
-        </audio>
+        <h1 class="main-title">24시간 힐링 라디오</h1>
+        <p class="subtitle">광고 없는 무료 방송 · 카페/매장/병원 등 모든 공간 무료 제공</p>
 
-        <div class="schedule-section">
-            <h2>오늘의 방송 스케줄</h2>
-            <div class="schedule-item" data-theme="day">주간 (06:00 ~ 18:00): 감성 피아노</div>
-            <div class="schedule-item" data-theme="evening">저녁 (18:00 ~ 00:00): 새소리와 피아노 (마사지/필라테스 타겟)</div>
-            <div class="schedule-item" data-theme="night">밤 (00:00 ~ 06:00): 불멍 & 자갈 파도</div>
+        <div id="listener-display" class="listener-info">현재 청취자: 1명 (준비 중)</div>
+        
+        <div class="player-box">
+            <div id="current-theme-title" class="current-theme-title">주간 힐링 음악</div>
+            <div id="current-theme-time" class="current-theme-time">06:00-18:00</div>
+
+            <div class="player-circle">
+                <img src="radio_icon.svg" alt="음악 아이콘" class="music-icon">
+                <button id="play-pause-button" class="play-pause-button">
+                    <img id="play-pause-icon" src="play_icon.svg" alt="재생/일시정지">
+                </button>
+            </div>
+
+            <div class="player-controls">
+                <button id="prev-button" class="control-button"><img src="prev_icon.svg" alt="이전"></button>
+                <button id="main-play-button" class="control-button main-play-button">
+                    <img id="main-play-icon" src="play_icon_large.svg" alt="재생">
+                </button>
+                <button id="next-button" class="control-button"><img src="next_icon.svg" alt="다음"></button>
+            </div>
+
+            <div class="volume-control">
+                <img src="volume_icon.svg" alt="볼륨" class="volume-icon">
+                <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.7">
+                <span class="volume-percent">70%</span>
+            </div>
         </div>
 
-        <div class="message-box">
-            <p id="comfort-message">따뜻한 위로의 메시지가 여기에 나타납니다.</p>
+        <div class="schedule-selector">
+            <button class="time-button live" data-time="day">
+                <span class="time-icon">☀️</span> 주간
+            </button>
+            <button class="time-button" data-time="evening">
+                <span class="time-icon">🌙</span> 저녁
+            </button>
+            <button class="time-button" data-time="night">
+                <span class="time-icon">🌌</span> 밤
+            </button>
         </div>
-
-        <div class="contact-section">
-            <a href="#" target="_blank" class="kakao-button">
-                실시간 사연 / 소통하기 (카카오톡)
+        
+        <div class="aif-web-info">
+            <h3 class="info-title">AIF 힐링 라디오 웹앱</h3>
+            <p>🎧 24시간 무료 힐링 음악 스트리밍</p>
+            <p>🔊 광고 없이 모든 공간에 딱 맞는 라디오</p>
+            
+            <a href="카카오톡 오픈 채팅방 링크를 여기에 넣어주세요" target="_blank" class="kakao-button">
+                💬 실시간 사연 / 소통하기 (카카오톡)
             </a>
             <p class="subscription-info">구독한 사람들에게는 라디오에서 힐링 라이브가 계속된다고 알릴 수 있습니다.</p>
         </div>
 
-    </div>
+        <div class="schedule-detail">
+            <h2 class="detail-title">오늘의 방송 스케줄</h2>
+            
+            <div class="schedule-item day live" data-start="06:00" data-end="18:00">
+                <p>06:00-18:00</p>
+                <p>주간 힐링 음악 (감성 피아노) <span class="live-tag">LIVE</span></p>
+            </div>
+            
+            <div class="schedule-item evening" data-start="18:00" data-end="00:00">
+                <p>18:00-00:00</p>
+                <p>저녁 힐링 음악</p>
+            </div>
 
+            <div class="schedule-item night" data-start="00:00" data-end="06:00">
+                <p>00:00-06:00</p>
+                <p>밤 힐링 음악</p>
+            </div>
+        </div>
+
+        <div class="message-box">
+            <p id="comfort-message" class="message-text"></p>
+        </div>
+
+    </div>
+    
     <script src="script.js"></script>
 </body>
 </html>
-     
-      
