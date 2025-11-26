@@ -1,36 +1,186 @@
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f9;
-    color: #333;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    margin: 0;
-    text-align: center;
-}
+document.addEventListener('DOMContentLoaded', () => {
+    // ----------------------------------------------------
+    // 1. 핵심 변수 및 테마 데이터 (유튜브 링크 및 메시지)
+    // ----------------------------------------------------
+    const streamUrl = "http://YOUR_VPS_IP_ADDRESS:8000/stream"; // ★★★ 중요: VPS 주소로 변경 예정 ★★★
+    const audioStream = new Audio(streamUrl);
+    audioStream.id = 'healing-stream-player';
+    audioStream.preload = 'auto';
+    audioStream.volume = 0.7; // 초기 볼륨 70%
 
-.radio-container {
-    background: white;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    width: 90%;
-    max-width: 400px;
-}
+    // DOM 요소
+    const mainPlayButton = document.getElementById('main-play-button');
+    const mainPlayIcon = document.getElementById('main-play-icon');
+    const volumeSlider = document.getElementById('volume-slider');
+    const volumePercent = document.querySelector('.volume-percent');
+    const currentThemeTitle = document.getElementById('current-theme-title');
+    const currentThemeTime = document.getElementById('current-theme-time');
+    const listenerDisplay = document.getElementById('listener-display');
+    const comfortMessage = document.getElementById('comfort-message');
+    const timeButtons = document.querySelectorAll('.time-button');
+    
+    // 시간대별 테마 정보 (유튜브 링크 반영)
+    const themes = {
+        day: {
+            title: "주간 힐링 음악 (감성 피아노)",
+            time: "06:00-18:00",
+            message: "오늘 하루도 수고 많으셨습니다. 편안한 음악으로 잠시 쉬어가세요.",
+            youtube: "https://youtube.com/live/XZuxNnsGuCw?feature=share"
+        },
+        evening: {
+            title: "저녁 힐링 음악 (새소리와 피아노)",
+            time: "18:00-00:00",
+            message: "지친 마음, 따뜻한 피아노 선율로 위로받으세요. 깊은 휴식을 취하세요.",
+            youtube: "https://www.youtube.com/live/FgR774QPfWI?si=LUM6D3vezPQtgbvS"
+        },
+        night: {
+            title: "밤 힐링 음악 (불멍 & 자갈 파도)",
+            time: "00:00-06:00",
+            message: "고요한 밤, 자연의 소리가 당신을 감싸 안습니다. 좋은 꿈 꾸세요.",
+            youtube: "https://www.youtube.com/live/bpVMbaE7dA8?si=sSNE9wZ56g0a7S8u"
+        }
+    };
+    
+    // 현재 시간 기준으로 초기 테마 설정 (임시로 'day'로 시작)
+    let currentThemeKey = 'day'; 
 
-h1 {
-    color: #4CAF50; /* 힐링되는 녹색 */
-    margin-bottom: 15px;
-}
+    // 새로운 audio 객체를 body에 추가 (이전 HTML 숨김 처리)
+    document.body.appendChild(audioStream);
+    listenerDisplay.textContent = `현재 청취자: 1명 (준비 중)`; 
 
-#listener-display {
-    margin-bottom: 25px;
-    font-size: 1.1em;
-    color: #555;
-}
+    // ----------------------------------------------------
+    // 2. 타이핑 애니메이션 구현
+    // ----------------------------------------------------
+    
+    function startTypingAnimation(message) {
+        // 기존 애니메이션 중단 및 초기화
+        comfortMessage.style.width = '100%'; 
+        comfortMessage.style.animation = 'none';
+        comfortMessage.textContent = '';
+        void comfortMessage.offsetWidth; // DOM 강제 리플로우
+        
+        // 메시지 길이에 따른 타이핑 속도 설정
+        const duration = message.length * 0.05; // 글자당 0.05초
+        
+        comfortMessage.style.animation = `
+            typing ${duration}s steps(${message.length}, end) forwards, 
+            blink-caret .75s step-end infinite
+        `;
+        
+        // 실제 텍스트를 애니메이션 끝에만 보이도록 설정
+        let charIndex = 0;
+        const typingInterval = setInterval(() => {
+            if (charIndex < message.length) {
+                comfortMessage.textContent += message.charAt(charIndex);
+                charIndex++;
+            } else {
+                clearInterval(typingInterval);
+                // 애니메이션이 완료된 후 커서 깜빡임만 남도록 처리
+            }
+        }, duration * 1000 / message.length);
+    }
 
-audio {
-    width: 100%;
-    margin-top: 20px;
-}
+    // ----------------------------------------------------
+    // 3. 테마 전환 및 스케줄 로직
+    // ----------------------------------------------------
+
+    function switchTheme(themeKey, isManual = false) {
+        currentThemeKey = themeKey;
+        const theme = themes[themeKey];
+        
+        // UI 업데이트
+        currentThemeTitle.textContent = theme.title;
+        currentThemeTime.textContent = theme.time;
+        
+        // LIVE/버튼 활성화 표시
+        document.querySelectorAll('.time-button').forEach(btn => btn.classList.remove('live'));
+        document.querySelector(`.time-button[data-time="${themeKey}"]`).classList.add('live');
+        document.querySelectorAll('.schedule-item').forEach(item => item.classList.remove('live'));
+        document.querySelector(`.schedule-item.${themeKey}`).classList.add('live');
+        
+        // 감성 메시지 업데이트 (수동 전환 시에만 메시지 표시)
+        if (isManual) {
+            startTypingAnimation(theme.message);
+        }
+
+        // 실제 Liquidsoap 스트림이므로, URL 변경은 필요 없으나,
+        // 나중에 VPS 스트림이 준비되면 이 함수 내에서 audioStream.src = streamUrl을 호출해야 함
+        
+        // 재생 중이었다면 스트림을 다시 로드하고 재생 시도
+        if (!audioStream.paused) {
+             audioStream.load();
+             audioStream.play().catch(e => console.error("Play failed after theme switch:", e));
+        }
+    }
+
+    // 시간대 버튼 이벤트 리스너 (수동 전환)
+    timeButtons.forEach(button => {
+        button.addEventListener('click', (e) => {
+            const themeKey = e.currentTarget.dataset.time;
+            switchTheme(themeKey, true); // 수동 전환 플래그 true
+        });
+    });
+
+    // 이전/다음 버튼 이벤트 리스너 (수동 테마 탐색)
+    const themeKeysArray = Object.keys(themes);
+
+    document.getElementById('prev-button').addEventListener('click', () => {
+        let currentIndex = themeKeysArray.indexOf(currentThemeKey);
+        let prevIndex = (currentIndex - 1 + themeKeysArray.length) % themeKeysArray.length;
+        switchTheme(themeKeysArray[prevIndex], true);
+    });
+
+    document.getElementById('next-button').addEventListener('click', () => {
+        let currentIndex = themeKeysArray.indexOf(currentThemeKey);
+        let nextIndex = (currentIndex + 1) % themeKeysArray.length;
+        switchTheme(themeKeysArray[nextIndex], true);
+    });
+
+
+    // ----------------------------------------------------
+    // 4. 초기화 및 에러 복구
+    // ----------------------------------------------------
+
+    // 메인 재생 버튼 이벤트
+    mainPlayButton.addEventListener('click', togglePlayPause);
+    
+    function togglePlayPause() {
+        if (audioStream.paused) {
+            audioStream.play().then(() => {
+                // 아이콘 경로가 필요합니다. 예시: 
+                // mainPlayIcon.src = "pause_icon_large.svg"; 
+                mainPlayIcon.alt = "일시정지";
+            }).catch(e => {
+                console.error("Autoplay failed:", e);
+                alert("자동 재생이 차단되었습니다. 버튼을 다시 눌러주세요.");
+            });
+        } else {
+            audioStream.pause();
+            // mainPlayIcon.src = "play_icon_large.svg"; // 아이콘 경로가 필요합니다. 예시:
+            mainPlayIcon.alt = "재생";
+        }
+    }
+
+    // 볼륨 조절
+    volumeSlider.addEventListener('input', () => {
+        audioStream.volume = volumeSlider.value;
+        volumePercent.textContent = `${Math.round(volumeSlider.value * 100)}%`;
+    });
+
+    // 스트림 에러 복구 기능
+    audioStream.addEventListener('error', () => {
+        console.error('Audio stream error. Retrying in 5 seconds...');
+        setTimeout(() => {
+            audioStream.load();
+            audioStream.play().catch(e => console.error("Play failed on retry:", e));
+        }, 5000); 
+    });
+
+    // 페이지 로드 시 실행
+    switchTheme('day'); // 주간 테마로 시작
+    // 초기 메시지 표시 (수동 전환 플래그 없이 자동 실행)
+    startTypingAnimation(themes.day.message);
+
+    // 초기 볼륨 설정
+    audioStream.volume = volumeSlider.value;
+});
